@@ -1,5 +1,10 @@
 package com.example.foldercopy;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,7 +21,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int PERMISSION_REQUEST_CODE = 1;
     Button CopyBtn;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,14 +33,49 @@ public class MainActivity extends AppCompatActivity {
         CopyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                copyBtnPress();
+                copyBtnPress(view);
             }
         });
     }
 
-    protected void copyBtnPress(){
-        String source = ((TextView)findViewById(R.id.SourcePathTV)).getText().toString();
-        Toast.makeText(getApplicationContext(), source, Toast.LENGTH_LONG).show();//display the text on button press
+    protected void copyBtnPress(View view){
+        //String source = ((TextView)findViewById(R.id.SourcePathTV)).getText().toString();
+        if (ContextCompat.checkSelfPermission(this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted
+                //request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_CODE);
+        } else {
+            // Permission has already been granted
+            System.out.println("Permission has already been granted");
+        }
+
+        File parentFolder = Environment.getExternalStorageDirectory();
+        System.out.println("Parent folder abs path: " + parentFolder.getAbsolutePath());
+        ((TextView)findViewById(R.id.SourcePathTV)).setText(parentFolder.getAbsolutePath());
+
+        String sourceFolderPath = parentFolder + File.separator + "SourceFolder";
+        System.out.println("source folder abs path: " + sourceFolderPath);
+
+        File sourceFolder = new File(parentFolder + File.separator + "SourceFolder");
+        if (sourceFolder.exists()) {
+            Toast.makeText(getApplicationContext(), "exists", Toast.LENGTH_LONG).show();
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "Creating", Toast.LENGTH_LONG).show();
+            System.out.println("Folder " + sourceFolder.getAbsolutePath() + " doesn't exist.");
+            if (sourceFolder.mkdirs()){
+                System.out.println("Folder " + sourceFolder.getAbsolutePath() + " created.");
+                Toast.makeText(getApplicationContext(), "Created", Toast.LENGTH_LONG).show();
+            }
+            else{
+                System.out.println("Folder " + sourceFolder.getAbsolutePath() + " was not created.");
+            }
+
+        }
 //        String destination = findViewById("DestinationPathTV").text;
 //        FileCopier fc = new FileCopier(new File(), new File());
 //        fc.run();
