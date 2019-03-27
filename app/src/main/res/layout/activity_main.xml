@@ -4,25 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     tools:background="@android:color/holo_green_light"
     tools:context=".MainActivity">
-
-    <Button
-        android:id="@+id/CopyBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="16dp"
-        android:text="Copy"
-        app:layout_constraintBottom_toTopOf="@+id/DoneTV"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3"
-        app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
         android:id="@+id/SourceCaptionTV"
@@ -30,89 +14,147 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
+        android:inputType="none"
         android:text="Source folder:"
-        app:layout_constraintBottom_toTopOf="@+id/SourcePathTV"
+        app:layout_constraintBottom_toTopOf="@+id/SourcePathET"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
+    <EditText
+        android:id="@+id/SourcePathET"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:hint="Source path"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/openSourceBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SourceCaptionTV" />
+
+    <Button
+        android:id="@+id/openSourceBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Open"
+        app:layout_constraintBottom_toTopOf="@+id/DestinationCaptionTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/SourcePathET" />
+
     <TextView
-        android:id="@+id/SourcePathTV"
+        android:id="@+id/DestinationCaptionTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginBottom="8dp"
-        android:editable="true"
-        android:text="/root/sdcard/CwTestFolder/DemoContent.txt"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        android:inputType="none"
+        android:text="Destination folder:"
+        app:layout_constraintBottom_toTopOf="@+id/DestinationPathET"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/SourceCaptionTV" />
+        app:layout_constraintTop_toBottomOf="@+id/openSourceBtn" />
 
-    <TextView
-        android:id="@+id/DoneTV"
+    <EditText
+        android:id="@+id/DestinationPathET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:hint="Destination path"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/openDestBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/DestinationCaptionTV" />
+
+    <Button
+        android:id="@+id/openDestBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="200dp"
-        android:text="Status"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Open"
+        app:layout_constraintBottom_toTopOf="@+id/CopyBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/DestinationPathET" />
+
+    <Button
+        android:id="@+id/CopyBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Copy"
+        app:layout_constraintBottom_toTopOf="@+id/statusCaptionTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/openDestBtn"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/statusCaptionTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:inputType="none"
+        android:text="Status:"
+        app:layout_constraintBottom_toTopOf="@+id/LogTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/CopyBtn" />
 
     <TextView
-        android:id="@+id/DestinationCaptureTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/LogTV"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="Destination folder:"
-        app:layout_constraintBottom_toTopOf="@+id/DestinationPathTV"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2" />
-
-    <TextView
-        android:id="@+id/DestinationPathTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginBottom="8dp"
-        android:editable="true"
-        android:text="Destination Path"
-        app:layout_constraintBottom_toTopOf="@+id/button3"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DestinationCaptureTV" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Open"
-        app:layout_constraintBottom_toTopOf="@+id/DestinationCaptureTV"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/SourcePathTV" />
+        app:layout_constraintTop_toBottomOf="@+id/statusCaptionTV" />
 
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="Open"
-        app:layout_constraintBottom_toTopOf="@+id/CopyBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DestinationPathTV" />
+
+
+
+
+
+
+
+
+
 
 </android.support.constraint.ConstraintLayout>

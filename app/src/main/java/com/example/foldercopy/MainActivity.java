@@ -2,6 +2,7 @@ package com.example.foldercopy;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -9,20 +10,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     Button CopyBtn;
+    public volatile int filesCopied = 0;
 
 
     @Override
@@ -39,59 +36,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void copyBtnPress(View view){
-        //String source = ((TextView)findViewById(R.id.SourcePathTV)).getText().toString();
-        if (ContextCompat.checkSelfPermission(this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-                // Permission is not granted
-                //request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        PERMISSION_REQUEST_CODE);
-        } else {
-            // Permission has already been granted
-            System.out.println("Permission has already been granted");
-        }
-
-        File parentFolder = Environment.getExternalStorageDirectory();
-        System.out.println("Parent folder abs path: " + parentFolder.getAbsolutePath());
-        ((TextView)findViewById(R.id.SourcePathTV)).setText(parentFolder.getAbsolutePath());
-
-        String sourceFolderPath = parentFolder + File.separator + "SourceFolder";
-        System.out.println("source folder abs path: " + sourceFolderPath);
-
-        File sourceFolder = new File(parentFolder + File.separator + "SourceFolder");
-        if (sourceFolder.exists()) {
-            Toast.makeText(getApplicationContext(), "exists", Toast.LENGTH_LONG).show();
-        }
-        else{
-            Toast.makeText(getApplicationContext(), "Creating", Toast.LENGTH_LONG).show();
-            System.out.println("Folder " + sourceFolder.getAbsolutePath() + " doesn't exist.");
-            if (sourceFolder.mkdirs()){
-                System.out.println("Folder " + sourceFolder.getAbsolutePath() + " created.");
-                Toast.makeText(getApplicationContext(), "Created", Toast.LENGTH_LONG).show();
+        log("Checking permission.");
+        //TODO: rewrite with onRequest
+        if (!permissionIsGiven()){
+            log("Permission is not given, requesting permission.");
+            requestPermission();
+            if (!permissionIsGiven()){
+                log("Necessary permission is not provided. Unable to proceed.");
+                return;
             }
-            else{
-                System.out.println("Folder " + sourceFolder.getAbsolutePath() + " was not created.");
-            }
-
         }
-//        String destination = findViewById("DestinationPathTV").text;
-//        FileCopier fc = new FileCopier(new File(), new File());
-//        fc.run();
+        log("Permission is given.");
 
-//        if (!checkPermissions()) {
-//            //ask for permissions
-//            //if (!checkPermissions){
-//            //error
-//            //}
+        File sourceFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Source");
+        File destinationFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Destination");
+
+        if (!createFolderIfNotExist(sourceFolder) ||  !createFolderIfNotExist(destinationFolder)){
+            log("Unable to proceed,");
+            return;
+        }
+
+        try{
+            new AsyncCopy(sourceFolder, destinationFolder).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        catch (IllegalArgumentException e){
+            log("Error occurred: " + e.getMessage());
+        }
+
+
+//        log("Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
+//        File[] filesToCopy =  sourceFolder.listFiles();
+//        filesCopied = filesToCopy.length;
+
+
+//        if(filesToCopy.length > 0){
+//            for (File file : filesToCopy){
+//                log("Processing file " + file.getName());
+//                FileCopier fc = new FileCopier(file, destinationFolder);
+//                fc.run();
+//            }
 //        }
-//        if (!checkAccess(source)){
-//            error;
+//        else{
+//            log("No files in the \"" + sourceFolder.getAbsolutePath() + "\" folder.");
 //        }
-//        if (!checkAccess(destination)){
-//            error
-//        }
+
 //        List<String> filesToCopy = new ArrayList<String>();
 //        fillListOfFiles(source, filesToCopy);
 //        Executor exec = new ThreadPoolExecutor();
@@ -100,6 +88,69 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
+    /**
+     *
+     * @param folder folder to create
+     * @return true if folder already exists or was created, false if attempt of creation failed.
+     */
+    private boolean createFolderIfNotExist(File folder) {
+        log("Checking if folder \"" + folder.getAbsolutePath() + "\" exists.");
+        if (folder.exists()) {
+            log("Folder exists.");
+            return true;
+        }
+        else{
+            log("Folder does not exist, attempting tot create.");
+            if (folder.mkdirs()){
+                log("Folder " + folder.getAbsolutePath() + " created.");
+                return true;
+            }
+            else{
+                log("Failed to create folder \"" + folder.getAbsolutePath() + "\"");
+                return false;
+            }
+        }
+    }
+
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                PERMISSION_REQUEST_CODE);
+
+    }
+
+    private boolean permissionIsGiven() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String[] permissions, int[] grantResults) {
+//        switch (requestCode) {
+//            case PERMISSION_REQUEST_CODE: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    // permission was granted, yay! Do the
+//                    // contacts-related task you need to do.
+//                } else {
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//
+//            // other 'case' lines to check for other
+//            // permissions this app might request.
+//        }
+//    }
+
+    public void log(String message){
+        TextView logger = findViewById(R.id.LogTV);
+        logger.append(message + "\n");
+
+    }
 //    private void fillListOfFiles (String source, List<String> list){
 //        //add all the files to the list
 //    }
