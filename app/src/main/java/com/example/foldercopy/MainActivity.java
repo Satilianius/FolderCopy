@@ -2,90 +2,92 @@ package com.example.foldercopy;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.text.method.ScrollingMovementMethod;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
+    TextView logTV;
+    TextView filesCopiedTV;
+    ProgressBar progressBar;
     Button CopyBtn;
-    public volatile int filesCopied = 0;
+    private int filesCopied;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        logTV = findViewById(R.id.logTV);
+        logTV.setMovementMethod(new ScrollingMovementMethod());
+
+        filesCopiedTV = findViewById(R.id.filesCopiedTV);
+
+        progressBar = findViewById(R.id.progressBar);
+        progressBar.setProgress(0);
+
+        filesCopied = 0;
+
         CopyBtn = findViewById(R.id.CopyBtn);
-        CopyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                copyBtnPress(view);
-            }
-        });
+        //TODO: view?
+        CopyBtn.setOnClickListener((view) -> copyBtnPress());
     }
 
-    protected void copyBtnPress(View view){
+    protected void copyBtnPress(){
+        //TODO: separate methods
+        progressBar.setProgress(0);
+        filesCopiedTV.setText("0");
+
         log("Checking permission.");
         //TODO: rewrite with onRequest
-        if (!permissionIsGiven()){
+        if (permissionNotGiven()){
             log("Permission is not given, requesting permission.");
             requestPermission();
-            if (!permissionIsGiven()){
+            if (permissionNotGiven()){
                 log("Necessary permission is not provided. Unable to proceed.");
                 return;
             }
         }
         log("Permission is given.");
 
+        // Creating source and destination folders if needed.
         File sourceFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Source");
         File destinationFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Destination");
-
         if (!createFolderIfNotExist(sourceFolder) ||  !createFolderIfNotExist(destinationFolder)){
             log("Unable to proceed,");
             return;
         }
 
-        try{
-            new AsyncCopy(sourceFolder, destinationFolder).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        log("Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
+        File[] filesToCopy =  sourceFolder.listFiles();
+        if (filesToCopy == null){
+            log("I/O Error occurred while getting the list of files in " + sourceFolder.getAbsolutePath());
+            return;
         }
-        catch (IllegalArgumentException e){
-            log("Error occurred: " + e.getMessage());
+        if(filesToCopy.length == 0) {
+            log("No files found in " + sourceFolder.getAbsolutePath());
+            return;
         }
-
-
-//        log("Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
-//        File[] filesToCopy =  sourceFolder.listFiles();
-//        filesCopied = filesToCopy.length;
-
-
-//        if(filesToCopy.length > 0){
-//            for (File file : filesToCopy){
-//                log("Processing file " + file.getName());
-//                FileCopier fc = new FileCopier(file, destinationFolder);
-//                fc.run();
-//            }
-//        }
-//        else{
-//            log("No files in the \"" + sourceFolder.getAbsolutePath() + "\" folder.");
-//        }
-
-//        List<String> filesToCopy = new ArrayList<String>();
-//        fillListOfFiles(source, filesToCopy);
-//        Executor exec = new ThreadPoolExecutor();
-//        for (int threadNumber = 1; threadNumber <= 2; threadNumber++) {
-//            exec.execute(new FileCopier(source, destination));
-//        }
+        progressBar.setMax(filesToCopy.length);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        for (File file : filesToCopy) {
+            executor.execute(new FileCopier(file, destinationFolder, this));
+        }
+        executor.shutdown();
     }
 
     /**
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
      * @return true if folder already exists or was created, false if attempt of creation failed.
      */
     private boolean createFolderIfNotExist(File folder) {
+        //TODO: check for isDirectory?
         log("Checking if folder \"" + folder.getAbsolutePath() + "\" exists.");
         if (folder.exists()) {
             log("Folder exists.");
@@ -116,12 +119,10 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 PERMISSION_REQUEST_CODE);
-
     }
 
-    private boolean permissionIsGiven() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
+    private boolean permissionNotGiven() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
     }
 
 //    @Override
@@ -146,19 +147,13 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    public void log(String message){
-        TextView logger = findViewById(R.id.LogTV);
-        logger.append(message + "\n");
-
+    public  void log(String message){
+        logTV.append(message + "\n");
     }
-//    private void fillListOfFiles (String source, List<String> list){
-//        //add all the files to the list
-//    }
-//    private boolean checkPermissions(){
-//
-//        return true;//check
-//    }
-//    private boolean checkAccess(String resource){
-//
-//    }
+
+    public synchronized void update(){
+        filesCopied++;
+        progressBar.setProgress(filesCopied);
+        filesCopiedTV.setText(String.valueOf(filesCopied));
+    }
 }

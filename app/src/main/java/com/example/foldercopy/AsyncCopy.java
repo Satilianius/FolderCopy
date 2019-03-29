@@ -9,67 +9,54 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class AsyncCopy extends AsyncTask<Void, Void, Integer> {
-    private File sourceFolder;
+public class AsyncCopy extends AsyncTask<Void, Void, Void> {
+    //private MainActivity activity;
+    private ConcurrentLinkedQueue<File> filesToCopy;
     private File destinationFolder;
-    File[] filesToCopy;
-    int filesCopied;
+    private Integer filesCopied = 0;
 
-    /**
-     * Constructor. Checks passed source and destination folders and sets the attributes.
-     *
-     * @param sourceFolder Folder files from which will be copied.
-     * @param destinationFolder Folder to which files will be copied.
-     */
-    public AsyncCopy(File sourceFolder, File destinationFolder) {
+
+    AsyncCopy(MainActivity activity, ConcurrentLinkedQueue<File> filesToCopy, File destinationFolder) {
         super();
-        if (!sourceFolder.isDirectory()) {
-            System.out.println("Source folder \"" + sourceFolder.getAbsolutePath() + "\" does not exist.");
-            throw new IllegalArgumentException("Source folder \"" + sourceFolder.getAbsolutePath() + "\" does not exist.");
-        }
-
         if (!destinationFolder.isDirectory()) {
             System.out.println("Destination: \"" + destinationFolder.getAbsolutePath() + "\" does not exist.");
             throw new IllegalArgumentException("Destination: \"" + destinationFolder.getAbsolutePath() + "\" does not exist.");
         }
-
-        this.sourceFolder = sourceFolder;
         this.destinationFolder = destinationFolder;
+        //this.activity = activity;
+        this.filesToCopy = filesToCopy;
     }
 
-    /**
-     * Gets the list of files in the source folder.
-     */
-    @Override
-    protected void onPreExecute(){
-        System.out.println(Thread.currentThread().getName() + ": Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
-        filesToCopy = sourceFolder.listFiles();
-        if (filesToCopy == null){
-            System.out.println("IO error occurred while trying to get the list of files in " + sourceFolder.getName());
-            cancel(true);
-        }
-        else if(filesToCopy.length == 0){
-            System.out.println("No files to copy in: " + sourceFolder.getName());
-        }
-        filesCopied = 0;
-    }
+//    /**
+//     * Gets the list of files in the source folder.
+//     */
+//    @Override
+//    protected void onPreExecute(){
+//        System.out.println(Thread.currentThread().getName() + ": Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
+//        filesToCopy = sourceFolder.listFiles();
+//        if (filesToCopy == null){
+//            System.out.println("IO error occurred while trying to get the list of files in " + sourceFolder.getName());
+//            cancel(true);
+//        }
+//        else if(filesToCopy.length == 0){
+//            System.out.println("No files to copy in: " + sourceFolder.getName());
+//        }
+//        filesCopied = 0;
+//    }
 
-    /**
-     * Copies files.
-     *
-     * @param voids
-     * @return
-     */
+
     @Override
-    protected Integer doInBackground(Void... voids) {
+    protected Void doInBackground(Void... voids) {
         System.out.println(Thread.currentThread().getName() + " started doInBackground");
-        if (isCancelled()){
-            return filesCopied;
-        }
-        int count = filesToCopy.length;
-        for (int i = 0; i < count; i++){
-            File file = filesToCopy[i];
+//        if (isCancelled()){
+//            return filesCopied;
+//        }
+//        int count = filesToCopy.length;
+        File file;
+        while ((file = filesToCopy.poll()) != null){
+            
             InputStream in = getInputStream(file);
             if (in == null){
                 System.out.println("Cannot create Input Stream. File " + file.getName() + " was not copied.");
@@ -92,7 +79,8 @@ public class AsyncCopy extends AsyncTask<Void, Void, Integer> {
                 System.out.println("An error occurred. File " + file.getName() + " was not copied.");
             }
         }
-        return filesCopied;
+        System.out.println(Thread.currentThread().getName() + ": No files left in the queue. Terminating");
+        return null;
     }
 
     /**
@@ -160,7 +148,7 @@ public class AsyncCopy extends AsyncTask<Void, Void, Integer> {
 
     @Override
     protected void onProgressUpdate(Void... voids) {
-        System.out.println(Thread.currentThread().getName() + " says that it finished copying something!");
+        System.out.println(Thread.currentThread().getName() + " reports about progress: " + filesCopied + " files copied");
         filesCopied++;
     }
 }

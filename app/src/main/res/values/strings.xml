@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">FolderCopy</string>
+    <string name="statusCaption">Files copied: </string>
+    <string name="progressInit">Status</string>
+    <string name="copyButton">Copy</string>
+    <string name="openButton">Open</string>
+    <string name="destination_folder">Destination folder:</string>
+    <string name="source_folder">Source folder:</string>
+    <string name="filesCopiedInit">0</string>
 </resources>

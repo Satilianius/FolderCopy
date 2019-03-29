@@ -12,7 +12,6 @@ public class Logger {
     public Logger getLogger(TextView tw){
         if (LOGGER == null){
             LOGGER = new Logger(tw);
-            return LOGGER;
         }
         return LOGGER;
     }

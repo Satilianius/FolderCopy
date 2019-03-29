@@ -11,30 +11,34 @@ import java.io.OutputStream;
 public class FileCopier implements Runnable {
     private File sourceFile;
     private File destinationFolder;
+    private MainActivity parentActivity;
 
-    public FileCopier(File sourceFile, File destinationFolder) {
+    FileCopier(File sourceFile, File destinationFolder, MainActivity activity) {
         this.sourceFile = sourceFile;
         this.destinationFolder = destinationFolder;
+        this.parentActivity = activity;
     }
 
     public void run() {
+        log("Hello from " + Thread.currentThread().getName() + ". I am processing " + sourceFile.getName());
         InputStream in = getInputStream(sourceFile);
         if (in == null){
-            System.out.println("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied.");
             return;
         }
 
         OutputStream out = getOutputStream(destinationFolder);
         if (out == null) {
-            System.out.println("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied.");
             return;
         }
 
         if (copyFile(in, out)){
-            System.out.println("File " + sourceFile.getName() + " was successfully copied.");
+            log(Thread.currentThread().getName() + ": File " + sourceFile.getName() + " was successfully copied.");
+            parentActivity.update();
         }
         else{
-            System.out.println("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied.");
         }
     }
 
@@ -43,35 +47,34 @@ public class FileCopier implements Runnable {
             return new FileInputStream(sourceFile);
         }
         catch (FileNotFoundException e){
-            System.out.println("File " + sourceFile.getAbsolutePath() + " not found.");// If file not found just do nothing.
+            log("File " + sourceFile.getAbsolutePath() + " not found.");// If file not found just do nothing.
             return null;
         }
     }
 
     private OutputStream getOutputStream(File destinationFolder) {
         if (!destinationFolder.isDirectory()) {
-            System.out.println("Destination: \"" + destinationFolder.getAbsolutePath() + "\" is not a directory.");
+            log("Destination: \"" + destinationFolder.getAbsolutePath() + "\" is not a directory.");
             return null;
         }
         if (!destinationFolder.exists()){
-            System.out.println("Folder \"" + destinationFolder.getAbsolutePath() + "\" not found.");
+            log("Folder \"" + destinationFolder.getAbsolutePath() + "\" not found.");
             return null;
         }
 
-        System.out.println("Creating destination file");
+        log(Thread.currentThread().getName() + ": Creating destination file");
         File destinationFile = new  File(destinationFolder + "/" + sourceFile.getName());
+
         try{
-            if (destinationFile.createNewFile()) {
-                return new FileOutputStream(destinationFile);
+            if (!destinationFile.exists()){
+                if (!destinationFile.createNewFile()){
+                    return null;
+                }
             }
-            else{
-                System.out.println("Destination folder already has " + sourceFile.getName());
-                //TODO: change name, rewrite, cancel
-                return null;
-            }
+            return new FileOutputStream(destinationFile);
         }
         catch(IOException e){
-            System.out.println("Cannot create destination file.");
+            log("Cannot create destination file.");
             return null;
         }
 
@@ -87,7 +90,7 @@ public class FileCopier implements Runnable {
             return true;
         }
         catch(IOException e){
-            System.out.println("An IOException occurs while trying to copy the file: " + sourceFile.getName());
+            log("An IOException occurs while trying to copy the file: " + sourceFile.getName());
             return false;
         }
 
@@ -97,17 +100,21 @@ public class FileCopier implements Runnable {
                 out.close();
             }
             catch (IOException e){
-                System.out.println("Cannot close the copied file");
+                log("Cannot close the copied file");
             }
 
             try {
                 in.close();
             }
             catch (IOException e){
-                System.out.println("Cannot close the original file: " + sourceFile.getName());
+                log("Cannot close the original file: " + sourceFile.getName());
             }
 
         }
+    }
+
+    private void log(final String message){
+        parentActivity.runOnUiThread(() -> parentActivity.log(message));
     }
 
 

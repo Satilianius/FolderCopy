@@ -17,7 +17,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
         android:inputType="none"
-        android:text="Source folder:"
+        android:text="@string/source_folder"
         app:layout_constraintBottom_toTopOf="@+id/SourcePathET"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -48,7 +48,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Open"
+        android:text="@string/openButton"
         app:layout_constraintBottom_toTopOf="@+id/DestinationCaptionTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +62,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginBottom="8dp"
         android:inputType="none"
-        android:text="Destination folder:"
+        android:text="@string/destination_folder"
         app:layout_constraintBottom_toTopOf="@+id/DestinationPathET"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/openSourceBtn" />
@@ -92,7 +92,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Open"
+        android:text="@string/openButton"
         app:layout_constraintBottom_toTopOf="@+id/CopyBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -108,12 +108,28 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:text="Copy"
-        app:layout_constraintBottom_toTopOf="@+id/statusCaptionTV"
+        android:text="@string/copyButton"
+        app:layout_constraintBottom_toTopOf="@+id/filesCopiedCaptionTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/openDestBtn"
         app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/filesCopiedCaptionTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:inputType="none"
+        android:text="@string/statusCaption"
+        app:layout_constraintBottom_toTopOf="@+id/statusCaptionTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/CopyBtn" />
 
     <TextView
         android:id="@+id/statusCaptionTV"
@@ -125,14 +141,31 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
         android:inputType="none"
-        android:text="Status:"
-        app:layout_constraintBottom_toTopOf="@+id/LogTV"
+        android:text="@string/progressInit"
+        app:layout_constraintBottom_toTopOf="@+id/progressBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/CopyBtn" />
+        app:layout_constraintTop_toBottomOf="@+id/filesCopiedCaptionTV" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:progress="0"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/logTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/statusCaptionTV" />
 
     <TextView
-        android:id="@+id/LogTV"
+        android:id="@+id/logTV"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -140,21 +173,22 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:inputType="textMultiLine"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/statusCaptionTV" />
+        app:layout_constraintTop_toBottomOf="@+id/progressBar" />
 
-
-
-
-
-
-
-
-
+    <TextView
+        android:id="@+id/filesCopiedTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="@string/filesCopiedInit"
+        app:layout_constraintBottom_toBottomOf="@+id/filesCopiedCaptionTV"
+        app:layout_constraintStart_toEndOf="@+id/filesCopiedCaptionTV"
+        app:layout_constraintTop_toTopOf="@+id/filesCopiedCaptionTV" />
 
 
 </android.support.constraint.ConstraintLayout>
