@@ -2,37 +2,50 @@ package com.example.foldercopy;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
-    TextView logTV;
+    EditText sourcePathET;
+    EditText destinationPathET;
+    File sourceFolder;
+    File destinationFolder;
+    Button copyBtn;
     TextView filesCopiedTV;
     ProgressBar progressBar;
-    Button CopyBtn;
+    TextView logTV;
+    //Shared resource, access encapsulated with update() synchronised method.
     private int filesCopied;
 
-
+    //TODO: open buttons
+    //TODO: on resume?
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sourcePathET = findViewById(R.id.sourcePathET);
+        sourcePathET.setText(getResources().getString(R.string.source_path));
+
+        destinationPathET = findViewById(R.id.destinationPathET);
+        destinationPathET.setText(getResources().getString(R.string.destination_path));
+
         logTV = findViewById(R.id.logTV);
+        //TODO: new ScrollingMovementMethod()
         logTV.setMovementMethod(new ScrollingMovementMethod());
 
         filesCopiedTV = findViewById(R.id.filesCopiedTV);
@@ -42,80 +55,88 @@ public class MainActivity extends AppCompatActivity {
 
         filesCopied = 0;
 
-        CopyBtn = findViewById(R.id.CopyBtn);
+        copyBtn = findViewById(R.id.CopyBtn);
         //TODO: view?
-        CopyBtn.setOnClickListener((view) -> copyBtnPress());
+        copyBtn.setOnClickListener((view) -> copyBtnPress());
     }
 
     protected void copyBtnPress(){
         //TODO: separate methods
         progressBar.setProgress(0);
+        filesCopied = 0;
         filesCopiedTV.setText("0");
+        sourceFolder = new File(sourcePathET.getText().toString());
+        destinationFolder = new File(destinationPathET.getText().toString());
 
-        log("Checking permission.");
+        //checkPermission();
+        log("Checking permission");
         //TODO: rewrite with onRequest
         if (permissionNotGiven()){
-            log("Permission is not given, requesting permission.");
+            log("Permission is not given, requesting permission");
             requestPermission();
             if (permissionNotGiven()){
-                log("Necessary permission is not provided. Unable to proceed.");
+                log("Necessary permission is not provided. Unable to proceed");
                 return;
             }
         }
-        log("Permission is given.");
 
-        // Creating source and destination folders if needed.
-        File sourceFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Source");
-        File destinationFolder = new File(Environment.getExternalStorageDirectory() + "/CW/Destination");
-        if (!createFolderIfNotExist(sourceFolder) ||  !createFolderIfNotExist(destinationFolder)){
-            log("Unable to proceed,");
-            return;
-        }
+        log("Checking folders");
+        if (!checkFolders()) return;
 
-        log("Getting the list of files in the \"" + sourceFolder.getName() + "\" folder.");
+        log("Getting the list of files in the \"" + sourceFolder.getName() + "\" folder");
         File[] filesToCopy =  sourceFolder.listFiles();
-        if (filesToCopy == null){
-            log("I/O Error occurred while getting the list of files in " + sourceFolder.getAbsolutePath());
-            return;
-        }
-        if(filesToCopy.length == 0) {
-            log("No files found in " + sourceFolder.getAbsolutePath());
-            return;
-        }
+
+        log("Checking files");
+        if (!checkFiles(filesToCopy)) return;
+
         progressBar.setMax(filesToCopy.length);
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-        for (File file : filesToCopy) {
-            executor.execute(new FileCopier(file, destinationFolder, this));
-        }
-        executor.shutdown();
+        copyBtn.setEnabled(false);
+
+        log("Copying files");
+        copyFiles(filesToCopy, destinationFolder);
+        copyBtn.setEnabled(true);
     }
 
-    /**
-     *
-     * @param folder folder to create
-     * @return true if folder already exists or was created, false if attempt of creation failed.
-     */
-    private boolean createFolderIfNotExist(File folder) {
-        //TODO: check for isDirectory?
-        log("Checking if folder \"" + folder.getAbsolutePath() + "\" exists.");
-        if (folder.exists()) {
-            log("Folder exists.");
-            return true;
+    private boolean checkFolders() {
+        if (!sourceFolder.isDirectory()) {
+            log("Source folder \"" + sourceFolder.getAbsolutePath() + "\" does not exists or is not a directory" +
+                    " Please choose another folder and try again");
+            return false;
         }
-        else{
-            log("Folder does not exist, attempting tot create.");
-            if (folder.mkdirs()){
-                log("Folder " + folder.getAbsolutePath() + " created.");
-                return true;
-            }
-            else{
-                log("Failed to create folder \"" + folder.getAbsolutePath() + "\"");
-                return false;
-            }
+
+        if (!destinationFolder.isDirectory()) {
+            log("Destination folder \"" + destinationFolder.getAbsolutePath() + "\" does not exists or is not a directory" +
+                    " Please choose another folder and try again");
+            return false;
         }
+        return true;
+    }
+
+    private boolean checkFiles(File[] filesToCopy) {
+        if (filesToCopy == null){
+            log("I/O Error occurred while getting the list of files in " + sourceFolder.getAbsolutePath());
+            return false;
+        }
+        if(filesToCopy.length == 0) {
+            log("No files found in \"" + sourceFolder.getAbsolutePath() + "\"");
+            return false;
+        }
+        return true;
+    }
+
+    private void copyFiles(File[] filesToCopy, File destinationFolder) {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        for (File file : filesToCopy) {
+            //TODO: memory new anonymous?
+            executor.execute(new FileCopier(file, destinationFolder, this));
+        }
+        //TODO: wait for tasks to be completed?
+        executor.shutdown();
+        executor = null;
     }
 
     private void requestPermission() {
+        //TODO new string[]
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 PERMISSION_REQUEST_CODE);
@@ -148,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public  void log(String message){
+        Log.i("MainActivity", message);
         logTV.append(message + "\n");
     }
 

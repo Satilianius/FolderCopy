@@ -18,13 +18,13 @@
         android:layout_marginBottom="8dp"
         android:inputType="none"
         android:text="@string/source_folder"
-        app:layout_constraintBottom_toTopOf="@+id/SourcePathET"
+        app:layout_constraintBottom_toTopOf="@+id/sourcePathET"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <EditText
-        android:id="@+id/SourcePathET"
+        android:id="@+id/sourcePathET"
         android:layout_width="0dp"
         android:layout_height="42dp"
         android:layout_marginStart="16dp"
@@ -33,26 +33,12 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
         android:hint="Source path"
+        android:text="@string/source_path"
         android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/openSourceBtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/SourceCaptionTV" />
-
-    <Button
-        android:id="@+id/openSourceBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/openButton"
         app:layout_constraintBottom_toTopOf="@+id/DestinationCaptionTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/SourcePathET" />
+        app:layout_constraintTop_toBottomOf="@+id/SourceCaptionTV" />
 
     <TextView
         android:id="@+id/DestinationCaptionTV"
@@ -63,12 +49,12 @@
         android:layout_marginBottom="8dp"
         android:inputType="none"
         android:text="@string/destination_folder"
-        app:layout_constraintBottom_toTopOf="@+id/DestinationPathET"
+        app:layout_constraintBottom_toTopOf="@+id/destinationPathET"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/openSourceBtn" />
+        app:layout_constraintTop_toBottomOf="@+id/sourcePathET" />
 
     <EditText
-        android:id="@+id/DestinationPathET"
+        android:id="@+id/destinationPathET"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -77,26 +63,12 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
         android:hint="Destination path"
+        android:text="@string/destination_path"
         android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/openDestBtn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DestinationCaptionTV" />
-
-    <Button
-        android:id="@+id/openDestBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/openButton"
         app:layout_constraintBottom_toTopOf="@+id/CopyBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/DestinationPathET" />
+        app:layout_constraintTop_toBottomOf="@+id/DestinationCaptionTV" />
 
     <Button
         android:id="@+id/CopyBtn"
@@ -112,7 +84,7 @@
         app:layout_constraintBottom_toTopOf="@+id/filesCopiedCaptionTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/openDestBtn"
+        app:layout_constraintTop_toBottomOf="@+id/destinationPathET"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView

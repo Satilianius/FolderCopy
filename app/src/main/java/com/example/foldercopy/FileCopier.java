@@ -18,27 +18,28 @@ public class FileCopier implements Runnable {
         this.destinationFolder = destinationFolder;
         this.parentActivity = activity;
     }
-
+    //TODO: logs
+    //TODO: comments
     public void run() {
-        log("Hello from " + Thread.currentThread().getName() + ". I am processing " + sourceFile.getName());
+        log("Now processing " + sourceFile.getName());
         InputStream in = getInputStream(sourceFile);
         if (in == null){
-            log("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied");
             return;
         }
 
         OutputStream out = getOutputStream(destinationFolder);
         if (out == null) {
-            log("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied");
             return;
         }
 
         if (copyFile(in, out)){
-            log(Thread.currentThread().getName() + ": File " + sourceFile.getName() + " was successfully copied.");
+            log("File " + sourceFile.getName() + " was successfully copied");
             parentActivity.update();
         }
         else{
-            log("File " + sourceFile.getName() + " was not copied.");
+            log("File " + sourceFile.getName() + " was not copied");
         }
     }
 
@@ -47,24 +48,20 @@ public class FileCopier implements Runnable {
             return new FileInputStream(sourceFile);
         }
         catch (FileNotFoundException e){
-            log("File " + sourceFile.getAbsolutePath() + " not found.");// If file not found just do nothing.
+            log("File " + sourceFile.getAbsolutePath() + " not found");
             return null;
         }
     }
 
     private OutputStream getOutputStream(File destinationFolder) {
         if (!destinationFolder.isDirectory()) {
-            log("Destination: \"" + destinationFolder.getAbsolutePath() + "\" is not a directory.");
-            return null;
-        }
-        if (!destinationFolder.exists()){
-            log("Folder \"" + destinationFolder.getAbsolutePath() + "\" not found.");
+            log("Destination folder \"" +
+                    destinationFolder.getAbsolutePath() + "\" does not exist or is not a directory");
             return null;
         }
 
-        log(Thread.currentThread().getName() + ": Creating destination file");
+        log("Creating destination file " + sourceFile.getName());
         File destinationFile = new  File(destinationFolder + "/" + sourceFile.getName());
-
         try{
             if (!destinationFile.exists()){
                 if (!destinationFile.createNewFile()){
@@ -74,10 +71,9 @@ public class FileCopier implements Runnable {
             return new FileOutputStream(destinationFile);
         }
         catch(IOException e){
-            log("Cannot create destination file.");
+            log("Could not create destination file");
             return null;
         }
-
     }
 
     private boolean copyFile(InputStream in, OutputStream out) {
@@ -87,34 +83,29 @@ public class FileCopier implements Runnable {
             while ((length = in.read(buffer)) > 0) {
                 out.write(buffer, 0, length);
             }
+            buffer = null;
             return true;
         }
         catch(IOException e){
             log("An IOException occurs while trying to copy the file: " + sourceFile.getName());
             return false;
         }
-
+        // new
         // Will return true in any case after this block, assuming that the file was copied.
         finally {
             try {
+                in.close();
                 out.close();
             }
             catch (IOException e){
-                log("Cannot close the copied file");
+                log("IO exception happened while closing fileStreams");
             }
-
-            try {
-                in.close();
-            }
-            catch (IOException e){
-                log("Cannot close the original file: " + sourceFile.getName());
-            }
-
         }
     }
 
     private void log(final String message){
-        parentActivity.runOnUiThread(() -> parentActivity.log(message));
+        String threadTag = Thread.currentThread().getName() + ": ";
+        parentActivity.runOnUiThread(() -> parentActivity.log(threadTag + message));
     }
 
 
