@@ -24,18 +24,18 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     /** Text fields where user inputs path to the folders. */
-    EditText sourcePathET;
-    EditText destinationPathET;
+    private EditText sourcePathET;
+    private EditText destinationPathET;
     /** Contain path to the source and destination folder inputted by user. */
-    File sourceFolder;
-    File destinationFolder;
+    private File sourceFolder;
+    private File destinationFolder;
     /** Starts copying process. */
-    Button copyBtn;
+    private Button copyBtn;
     /** Shows in real time how many files were copied from the last button press. */
-    TextView filesCopiedTV;
-    ProgressBar progressBar;
+    private TextView filesCopiedTV;
+    private ProgressBar progressBar;
     /** Shows the process of copying and any errors occurred to the user. */
-    TextView logTV;
+    private TextView logTV;
     /**Contains the number of files copied from the last button press.
      * Shared resource, encapsulated with update() synchronised method,
      * which is accessible from other threads.*/
@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
         destinationPathET.setText(getResources().getString(R.string.destination_path));
 
         logTV = findViewById(R.id.logTV);
-        //TODO: new ScrollingMovementMethod()
+        //ScrollingMovementMethod should be destroyed only when application is closed,
+        // so no memory release during the application work.
         logTV.setMovementMethod(new ScrollingMovementMethod());
 
         filesCopied = 0;
@@ -101,13 +102,16 @@ public class MainActivity extends AppCompatActivity {
         File[] filesToCopy =  sourceFolder.listFiles();
         // Checks if there are any files in the source folder.
         if (!checkFiles(filesToCopy)) return;
-
+        //Source folder is not used after this moment, so releases the memory here.
+        sourceFolder = null;
         progressBar.setMax(filesToCopy.length);
-        // Prevents button to be clicked while copying is on progress.
+        // Prevents button to be clicked while copying is in progress.
         copyBtn.setEnabled(false);
 
         log("Copying files");
         copyFiles(filesToCopy, destinationFolder);
+        // Destination folder file is not used after this moment, so releases the memory here.
+        destinationFolder = null;
         copyBtn.setEnabled(true);
     }
 
@@ -167,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
         }
         executor.shutdown();
         executor = null;
-        // At this point no more references to the anonymous FileCopiers exist,
+        // At this point no more references to the anonymous FileCopiers and ThreadPool exist,
         // so they can be garbage collected.
     }
 
@@ -175,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
      * Requests access to Storage.
      */
     private void requestPermission() {
-        //TODO new anonymous string[]
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 PERMISSION_REQUEST_CODE);
